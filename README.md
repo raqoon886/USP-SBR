@@ -10,7 +10,7 @@ Original code from [here](https://github.com/CRIPAC-DIG/SR-GNN). Original [paper
 
 Borrow the data preprocessing from original repo, including `diginetica` and `yoochoose`.
 
-Using PyTorch 1.0, TensorboardX and [PyTorch-Geometric](https://github.com/rusty1s/pytorch_geometric).
+Using PyTorch 1.0, [TensorboardX](https://github.com/lanpa/tensorboardX), [PyTorch-Geometric](https://github.com/rusty1s/pytorch_geometric) and [tqdm](https://github.com/tqdm/tqdm).
 
 ## Data preparation
 
@@ -25,7 +25,7 @@ Using PyTorch 1.0, TensorboardX and [PyTorch-Geometric](https://github.com/rusty
 
 ## Citation
 
-If you use make advantage of the SR-GNN model in your research, please cite the following:
+If you make advantage of the SR-GNN model in your research, please cite the following:
 
     @inproceedings{Wu:2019vb,
     author = {Wu, Shu and Tang, Yuyuan and Zhu, Yanqiao and Wang, Liang and Xie, Xing and Tan, Tieniu},
