@@ -10,13 +10,13 @@ Original code from [here](https://github.com/CRIPAC-DIG/SR-GNN). Original [paper
 
 Borrow the data preprocessing from original repo, including `diginetica` and `yoochoose`.
 
-Using PyTorch 1.0, [TensorboardX](https://github.com/lanpa/tensorboardX), [PyTorch-Geometric](https://github.com/rusty1s/pytorch_geometric) and [tqdm](https://github.com/tqdm/tqdm).
+Using PyTorch 1.0, [TensorboardX](https://github.com/lanpa/tensorboardX), [PyTorch-Geometric 1.1.3](https://github.com/rusty1s/pytorch_geometric) and [tqdm](https://github.com/tqdm/tqdm).
 
 ## Data preparation
 
 1) Follow the steps in original code repo to get `train.txt` and `test.txt` for every dataset.
 
-2) Put both `txt` file in the `raw` folder W.R.T. different datasets.
+2) Put both `tain.txt` and `test.txt` in the `raw` folder W.R.T. different datasets.
 
 ## Training and testing
 
