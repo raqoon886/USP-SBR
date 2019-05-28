@@ -49,8 +49,14 @@ class MultiSessionsGraph(InMemoryDataset):
                     i += 1
                 senders.append(nodes[node])
             receivers = senders[:]
-            del senders[-1]    # the last item is a receiver
-            del receivers[0]    # the first item is a sender
+            
+            if len(senders) != 1:
+                del senders[-1]  # the last item is a receiver
+                del receivers[0]  # the first item is a sender
+
+            # undirected
+            senders, receivers = senders + receivers, receivers + senders
+
             edge_index = torch.tensor([senders, receivers], dtype=torch.long)
             x = torch.tensor(x, dtype=torch.long)
             y = torch.tensor([y], dtype=torch.long)
