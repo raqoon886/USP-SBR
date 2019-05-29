@@ -67,7 +67,6 @@ class GNNModel(nn.Module):
             data.x - 1, data.edge_index, data.batch, data.edge_count, data.degree_inv, data.sequence
 
         embedding = self.embedding(x).squeeze()
-        hidden = self.gated(embedding, edge_index, edge_index)
-        hidden2 = F.relu(hidden)
+        hidden = self.gated(embedding, edge_index, edge_count * degree_inv)
   
-        return self.e2s(hidden2, self.embedding, batch)
+        return self.e2s(hidden, self.embedding, batch)
