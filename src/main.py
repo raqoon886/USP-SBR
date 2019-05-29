@@ -7,10 +7,12 @@ Created on 4/4/2019
 import os
 import argparse
 import logging
+import time
+import torch
 from tqdm import tqdm
 from dataset import MultiSessionsGraph
 from torch_geometric.data import DataLoader
-from model import *
+from model import GNNModel
 from train import forward
 from tensorboardX import SummaryWriter
 
@@ -21,7 +23,7 @@ logging.basicConfig(level=logging.DEBUG,
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--dataset', default='diginetica', help='dataset name: diginetica/yoochoose1_4/yoochoose1_64/sample')
+parser.add_argument('--dataset', default='sample', help='dataset name: diginetica/yoochoose1_4/yoochoose1_64/sample')
 parser.add_argument('--batch_size', type=int, default=100, help='input batch size')
 parser.add_argument('--hidden_size', type=int, default=100, help='hidden state size')
 parser.add_argument('--epoch', type=int, default=10, help='the number of epochs to train for')
@@ -43,7 +45,8 @@ def main():
     test_dataset = MultiSessionsGraph(cur_dir + '/../datasets/' + opt.dataset, phrase='test')
     test_loader = DataLoader(test_dataset, batch_size=opt.batch_size, shuffle=False)
 
-    log_dir = cur_dir + '/../log/' + str(opt.dataset) + '/' + str(opt)
+    log_dir = cur_dir + '/../log/' + str(opt.dataset) + '/' + str(opt) + time.strftime(
+        "%Y-%m-%d %H:%M:%S", time.localtime())
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
     logging.warning('logging to {}'.format(log_dir))

@@ -21,7 +21,7 @@ class Embedding2Score(nn.Module):
         self.q = nn.Linear(self.hidden_size, 1)
         self.W_3 = nn.Linear(2 * self.hidden_size, self.hidden_size)
 
-    def forward(self, session_embedding, all_item_embedding, batch):
+    def forward(self, session_embedding, item_embedding_table, batch):
         sections = torch.bincount(batch)
         v_i = torch.split(session_embedding, tuple(sections.cpu().numpy()))    # split whole x back into graphs G_i
         v_n_repeat = tuple(nodes[-1].view(1, -1).repeat(nodes.shape[0], 1) for nodes in v_i)    # repeat |V|_i times for the last node embedding
@@ -37,7 +37,7 @@ class Embedding2Score(nn.Module):
         s_h = self.W_3(torch.cat((torch.cat(v_n, dim=0), torch.cat(s_g, dim=0)), dim=1))
         
         # Eq(8)
-        z_i_hat = torch.mm(s_h, all_item_embedding.weight.transpose(1, 0))
+        z_i_hat = torch.mm(s_h, item_embedding_table.weight.transpose(1, 0))
         
         return z_i_hat
 
@@ -63,10 +63,11 @@ class GNNModel(nn.Module):
             weight.data.uniform_(-stdv, stdv)
 
     def forward(self, data):
-        x, edge_index, batch = data.x - 1, data.edge_index, data.batch
+        x, edge_index, batch, edge_count, degree_inv, sequence = \
+            data.x - 1, data.edge_index, data.batch, data.edge_count, data.degree_inv, data.sequence
 
         embedding = self.embedding(x).squeeze()
-        hidden = self.gated(embedding, edge_index)
+        hidden = self.gated(embedding, edge_index, edge_index)
         hidden2 = F.relu(hidden)
   
         return self.e2s(hidden2, self.embedding, batch)

@@ -6,6 +6,7 @@ Created on 31/3/2019
 
 import pickle
 import torch
+import collections
 from torch_geometric.data import InMemoryDataset, Data
 
 
@@ -37,12 +38,13 @@ class MultiSessionsGraph(InMemoryDataset):
         data = pickle.load(open(self.raw_dir + '/' + self.raw_file_names[0], 'rb'))
         data_list = []
         
-        for sequences, y in zip(data[0], data[1]):
+        for sequence, y in zip(data[0], data[1]):
+            # sequence = [1, 2, 3, 2, 4]
             i = 0
             nodes = {}    # dict{15: 0, 16: 1, 18: 2, ...}
             senders = []
             x = []
-            for node in sequences:
+            for node in sequence:
                 if node not in nodes:
                     nodes[node] = i
                     x.append([node])
@@ -54,13 +56,42 @@ class MultiSessionsGraph(InMemoryDataset):
                 del senders[-1]  # the last item is a receiver
                 del receivers[0]  # the first item is a sender
 
-            # undirected
+            pair = {}
+            sur_senders = senders[:]
+            sur_receivers = receivers[:]
+            i = 0
+            for sender, receiver in zip(sur_senders, sur_receivers):
+                if str(sender) + '-' + str(receiver) in pair:
+                    pair[str(sender) + '-' + str(receiver)] += 1
+                    del senders[i]
+                    del receivers[i]
+                else:
+                    pair[str(sender) + '-' + str(receiver)] = 1
+                    i += 1
+
+            count = collections.Counter(senders)
+            out_degree_inv = [1 / count[i] for i in senders]
+
+            count = collections.Counter(receivers)
+            in_degree_inv = [1 / count[i] for i in receivers]
+            
+            degree_inv = torch.tensor(out_degree_inv + in_degree_inv, dtype=torch.float)
+
+            edge_count = [pair[str(senders[i]) + '-' + str(receivers[i])] for i in range(len(senders))]
+            edge_count = torch.tensor(edge_count + edge_count, dtype=torch.float)
+
             senders, receivers = senders + receivers, receivers + senders
 
             edge_index = torch.tensor([senders, receivers], dtype=torch.long)
             x = torch.tensor(x, dtype=torch.long)
             y = torch.tensor([y], dtype=torch.long)
-            data_list.append(Data(x=x, edge_index=edge_index, y=y))
+            sequence = torch.tensor(sequence, dtype=torch.long)
+            sequence_len = torch.tensor([len(sequence)], dtype=torch.long)
+            session_graph = Data(x=x, y=y,
+                                 edge_index=edge_index, edge_count=edge_count,
+                                 sequence=sequence, sequence_len=sequence_len,
+                                 degree_inv=degree_inv)
+            data_list.append(session_graph)
             
         data, slices = self.collate(data_list)
         torch.save((data, slices), self.processed_paths[0])
