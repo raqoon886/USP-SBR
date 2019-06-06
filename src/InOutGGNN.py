@@ -70,10 +70,10 @@ class InOutGGNN(MessagePassing):
         for i in range(self.num_layers):
             self.flow = 'source_to_target'
             h1 = torch.matmul(h, self.weight[i, 0])
-            m1 = self.propagate(edge_index, x=h1, edge_weight=edge_weight)
+            m1 = self.propagate(edge_index, x=h1, edge_weight=edge_weight[0])
             self.flow = 'target_to_source'
             h2 = torch.matmul(h, self.weight[i, 1])
-            m2 = self.propagate(edge_index, x=h2, edge_weight=edge_weight)
+            m2 = self.propagate(edge_index, x=h2, edge_weight=edge_weight[1])
             h = self.rnn(torch.cat((m1, m2), dim=-1), h)
 
         return h

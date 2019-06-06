@@ -75,10 +75,11 @@ class MultiSessionsGraph(InMemoryDataset):
             count = collections.Counter(receivers)
             in_degree_inv = [1 / count[i] for i in receivers]
             
-            degree_inv = torch.tensor(out_degree_inv + in_degree_inv, dtype=torch.float)
+            in_degree_inv = torch.tensor(in_degree_inv, dtype=torch.float)
+            out_degree_inv = torch.tensor(out_degree_inv, dtype=torch.float)
 
             edge_count = [pair[str(senders[i]) + '-' + str(receivers[i])] for i in range(len(senders))]
-            edge_count = torch.tensor(edge_count + edge_count, dtype=torch.float)
+            edge_count = torch.tensor(edge_count, dtype=torch.float)
 
             # senders, receivers = senders + receivers, receivers + senders
 
@@ -90,7 +91,7 @@ class MultiSessionsGraph(InMemoryDataset):
             session_graph = Data(x=x, y=y,
                                  edge_index=edge_index, edge_count=edge_count,
                                  sequence=sequence, sequence_len=sequence_len,
-                                 degree_inv=degree_inv)
+                                 in_degree_inv=in_degree_inv, out_degree_inv=out_degree_inv)
             data_list.append(session_graph)
             
         data, slices = self.collate(data_list)
