@@ -10,6 +10,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch_geometric.nn import GCNConv, GATConv, GatedGraphConv
+from InOutGGNN import InOutGGNN
 
 
 class Embedding2Score(nn.Module):
@@ -52,7 +53,7 @@ class GNNModel(nn.Module):
         super(GNNModel, self).__init__()
         self.hidden_size, self.n_node = hidden_size, n_node
         self.embedding = nn.Embedding(self.n_node, self.hidden_size)
-        self.gated = GatedGraphConv(self.hidden_size, num_layers=1)
+        self.gated = InOutGGNN(self.hidden_size, num_layers=1)
         self.e2s = Embedding2Score(self.hidden_size)
         self.loss_function = nn.CrossEntropyLoss()
         self.reset_parameters()
@@ -67,6 +68,6 @@ class GNNModel(nn.Module):
             data.x - 1, data.edge_index, data.batch, data.edge_count, data.degree_inv, data.sequence
 
         embedding = self.embedding(x).squeeze()
-        hidden = self.gated(embedding, edge_index, edge_count * degree_inv)
+        hidden = self.gated(embedding, edge_index)#, edge_count * degree_inv)
   
         return self.e2s(hidden, self.embedding, batch)

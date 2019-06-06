@@ -80,7 +80,7 @@ class MultiSessionsGraph(InMemoryDataset):
             edge_count = [pair[str(senders[i]) + '-' + str(receivers[i])] for i in range(len(senders))]
             edge_count = torch.tensor(edge_count + edge_count, dtype=torch.float)
 
-            senders, receivers = senders + receivers, receivers + senders
+            # senders, receivers = senders + receivers, receivers + senders
 
             edge_index = torch.tensor([senders, receivers], dtype=torch.long)
             x = torch.tensor(x, dtype=torch.long)
