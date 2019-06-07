@@ -48,6 +48,8 @@ class InOutGGNN(MessagePassing):
 
         self.weight = Param(Tensor(num_layers, 2, out_channels, out_channels))
         self.rnn = torch.nn.GRUCell(2 * out_channels, out_channels, bias=bias)
+        self.bias_in = Param(Tensor(self.out_channels))
+        self.bias_out = Param(Tensor(self.out_channels))
 
         self.reset_parameters()
 
@@ -70,10 +72,10 @@ class InOutGGNN(MessagePassing):
         for i in range(self.num_layers):
             self.flow = 'source_to_target'
             h1 = torch.matmul(h, self.weight[i, 0])
-            m1 = self.propagate(edge_index, x=h1, edge_weight=edge_weight[0])
+            m1 = self.propagate(edge_index, x=h1, edge_weight=edge_weight[0], bias=self.bias_in)
             self.flow = 'target_to_source'
             h2 = torch.matmul(h, self.weight[i, 1])
-            m2 = self.propagate(edge_index, x=h2, edge_weight=edge_weight[1])
+            m2 = self.propagate(edge_index, x=h2, edge_weight=edge_weight[1], bias=self.bias_out)
             h = self.rnn(torch.cat((m1, m2), dim=-1), h)
 
         return h
@@ -82,6 +84,12 @@ class InOutGGNN(MessagePassing):
         if edge_weight is not None:
             return edge_weight.view(-1, 1) * x_j
         return x_j
+
+    def update(self, aggr_out, bias):
+        if bias is not None:
+            return aggr_out + bias
+        else:
+            return aggr_out
 
     def __repr__(self):
         return '{}({}, num_layers={})'.format(

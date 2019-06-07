@@ -45,7 +45,7 @@ def main():
     test_dataset = MultiSessionsGraph(cur_dir + '/../datasets/' + opt.dataset, phrase='test')
     test_loader = DataLoader(test_dataset, batch_size=opt.batch_size, shuffle=False)
 
-    log_dir = cur_dir + '/../log/' + str(opt.dataset) + '/' + str(opt) + '_InOut_' + time.strftime(
+    log_dir = cur_dir + '/../log/' + str(opt.dataset) + '/' + str(opt) + time.strftime(
         "%Y-%m-%d %H:%M:%S", time.localtime())
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)

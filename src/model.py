@@ -8,8 +8,6 @@ Created on 4/4/2019
 import math
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
-from torch_geometric.nn import GCNConv, GATConv, GatedGraphConv
 from InOutGGNN import InOutGGNN
 
 
@@ -22,17 +20,17 @@ class Embedding2Score(nn.Module):
         self.q = nn.Linear(self.hidden_size, 1)
         self.W_3 = nn.Linear(2 * self.hidden_size, self.hidden_size)
 
-    def forward(self, session_embedding, item_embedding_table, batch):
+    def forward(self, session_embedding, item_embedding_table, batch, num_count):
         sections = torch.bincount(batch)
         v_i = torch.split(session_embedding, tuple(sections.cpu().numpy()))    # split whole x back into graphs G_i
         v_n_repeat = tuple(nodes[-1].view(1, -1).repeat(nodes.shape[0], 1) for nodes in v_i)    # repeat |V|_i times for the last node embedding
 
         # Eq(6)
         alpha = self.q(torch.sigmoid(self.W_1(torch.cat(v_n_repeat, dim=0)) + self.W_2(session_embedding)))    # |V|_i * 1
-        s_g_whole = alpha * session_embedding    # |V|_i * hidden_size
+        s_g_whole = num_count.view(-1, 1) * alpha * session_embedding    # |V|_i * hidden_size
         s_g_split = torch.split(s_g_whole, tuple(sections.cpu().numpy()))    # split whole s_g into graphs G_i
         s_g = tuple(torch.sum(embeddings, dim=0).view(1, -1) for embeddings in s_g_split)
-        
+
         # Eq(7)
         v_n = tuple(nodes[-1].view(1, -1) for nodes in v_i)
         s_h = self.W_3(torch.cat((torch.cat(v_n, dim=0), torch.cat(s_g, dim=0)), dim=1))
@@ -64,10 +62,11 @@ class GNNModel(nn.Module):
             weight.data.uniform_(-stdv, stdv)
 
     def forward(self, data):
-        x, edge_index, batch, edge_count, in_degree_inv, out_degree_inv, sequence = \
-            data.x - 1, data.edge_index, data.batch, data.edge_count, data.in_degree_inv, data.out_degree_inv, data.sequence
+        x, edge_index, batch, edge_count, in_degree_inv, out_degree_inv, sequence, num_count = \
+            data.x - 1, data.edge_index, data.batch, data.edge_count, data.in_degree_inv, data.out_degree_inv,\
+            data.sequence, data.num_count
 
         embedding = self.embedding(x).squeeze()
         hidden = self.gated(embedding, edge_index, [edge_count * in_degree_inv, edge_count * out_degree_inv])
   
-        return self.e2s(hidden, self.embedding, batch)
+        return self.e2s(hidden, self.embedding, batch, num_count)

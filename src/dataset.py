@@ -40,6 +40,7 @@ class MultiSessionsGraph(InMemoryDataset):
         
         for sequence, y in zip(data[0], data[1]):
             # sequence = [1, 2, 3, 2, 4]
+            count = collections.Counter(sequence)
             i = 0
             nodes = {}    # dict{15: 0, 16: 1, 18: 2, ...}
             senders = []
@@ -51,7 +52,8 @@ class MultiSessionsGraph(InMemoryDataset):
                     i += 1
                 senders.append(nodes[node])
             receivers = senders[:]
-            
+            num_count = [count[i[0]] for i in x]
+
             if len(senders) != 1:
                 del senders[-1]  # the last item is a receiver
                 del receivers[0]  # the first item is a sender
@@ -86,9 +88,10 @@ class MultiSessionsGraph(InMemoryDataset):
             edge_index = torch.tensor([senders, receivers], dtype=torch.long)
             x = torch.tensor(x, dtype=torch.long)
             y = torch.tensor([y], dtype=torch.long)
+            num_count = torch.tensor(num_count, dtype=torch.float)
             sequence = torch.tensor(sequence, dtype=torch.long)
             sequence_len = torch.tensor([len(sequence)], dtype=torch.long)
-            session_graph = Data(x=x, y=y,
+            session_graph = Data(x=x, y=y, num_count=num_count,
                                  edge_index=edge_index, edge_count=edge_count,
                                  sequence=sequence, sequence_len=sequence_len,
                                  in_degree_inv=in_degree_inv, out_degree_inv=out_degree_inv)
