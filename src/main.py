@@ -14,7 +14,7 @@ from dataset import MultiSessionsGraph
 from torch_geometric.data import DataLoader
 from model import GNNModel
 from train import forward
-from tensorboardX import SummaryWriter
+from torch.utils.tensorboard import SummaryWriter
 
 
 # Logger configuration
