@@ -1,8 +1,8 @@
-# SR-GNN_PyTorch-Geometric
+# SRGNN_PyG
 
 A reimplementation of SRGNN. 
 
-![image](https://github.com/RuihongQiu/SR-GNN_PyTorch-Geometric/raw/master/Results.PNG)
+![image](https://github.com/RuihongQiu/SRGNN_PyG/raw/master/Results.PNG)
 
 Original code from [here](https://github.com/CRIPAC-DIG/SR-GNN). Original [paper](https://arxiv.org/abs/1811.00855).
 
