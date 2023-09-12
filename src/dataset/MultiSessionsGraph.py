@@ -25,7 +25,7 @@ class MultiSessionsGraph(InMemoryDataset):
      
     @property
     def raw_file_names(self):
-        return [self.phrase + '.txt']
+        return [self.phrase + '.pkl']
     
     @property
     def processed_file_names(self):
@@ -34,11 +34,34 @@ class MultiSessionsGraph(InMemoryDataset):
     def download(self):
         pass
     
+    def usersession_windowing(self, data):
+        '''
+        augment user-session data.
+        '''
+        x = []
+        y = []
+        user_ids = []
+        sess_ids = []
+        for idx, session in enumerate(data['session_data']):
+            s_len = len(session)
+            uid, sid = data['user_idx'][idx], data['sess_idx'][idx]
+            for i in range(s_len-1):
+                x.append(session[:i+1])
+                y.append(session[i+1])
+                user_ids.append(uid)
+                sess_ids.append(sid)
+
+        return (x, y, user_ids, sess_ids)
+                              
     def process(self):
         data = pickle.load(open(self.raw_dir + '/' + self.raw_file_names[0], 'rb'))
+        data = self.usersession_windowing(data)
         data_list = []
+        user_ids = torch.Tensor(data[2]).long()
+        sess_ids = torch.Tensor(data[3]).long()
         
-        for sequence, y in zip(data[0], data[1]):
+        for idx, sequence in enumerate(data[0]):
+            y = data[1][idx]
             # sequence = [1, 2, 3, 2, 4]
             count = collections.Counter(sequence)
             i = 0
@@ -94,7 +117,8 @@ class MultiSessionsGraph(InMemoryDataset):
             session_graph = Data(x=x, y=y, num_count=num_count,
                                  edge_index=edge_index, edge_count=edge_count,
                                  sequence=sequence, sequence_len=sequence_len,
-                                 in_degree_inv=in_degree_inv, out_degree_inv=out_degree_inv)
+                                 in_degree_inv=in_degree_inv, out_degree_inv=out_degree_inv,
+                                user_ids = user_ids[idx], sess_ids=sess_ids[idx])
             data_list.append(session_graph)
             
         data, slices = self.collate(data_list)
