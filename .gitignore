@@ -15,6 +15,8 @@ log/
 *.dat
 *.pt
 datasets/yoochoose1_4/
+datasets/diginetica/
+datasets/yoochoose64_1/
 
 # C extensions
 *.so
@@ -116,14 +118,11 @@ venv.bak/
 # mypy
 .mypy_cache/
 
-# datasets
-/datasets
-
 # notebooks
-/notebooks
+notebooks/
 
 # experiment
-/experiment
+experiment/
 
 # log
-/log
+log/
