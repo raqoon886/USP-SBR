@@ -115,3 +115,15 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# datasets
+/datasets
+
+# notebooks
+/notebooks
+
+# experiment
+/experiment
+
+# log
+/log
